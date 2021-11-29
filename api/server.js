@@ -12,16 +12,25 @@ server.get('/api/users', async (req, res) => {
     try {
         const users = await Users.find();
         res.json(users);
-    }
-    catch (err) {
+    } catch (err) {
         res.status(500).json({
             message: "you broke it",
             error: err.message
-        })
+        });
     }
 })
-
 // GET	/api/users/:id
+server.get('/api/users/:id', async (req, res) => {
+    try {
+        const user = await Users.findById(req.params.id);
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({
+            message: "you broke it",
+            error: err.message
+        });
+    }
+})
 
 // DELETE	/api/users/:id
 
