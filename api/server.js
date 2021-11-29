@@ -5,13 +5,13 @@ const server = express();
 
 server.use(express.json());
 
-// POST	/api/users
+// INSERT NEW USER
 server.post('/api/users', async (req, res) => {
     try {
         if (!req.body.name || !req.body.bio) {
             res.status(400).json({ 
                 message: "Please provide name and bio for the user"
-            })
+            });
         }
         else {
             const newUser = await Users.insert(req.body);
@@ -22,10 +22,10 @@ server.post('/api/users', async (req, res) => {
         res.status(500).json({
             message: "There was an error while saving the user to the database",
             error: err.message
-        })
+        });
     }
 })
-// GET	/api/users
+// GET ALL USERS //
 server.get('/api/users', async (req, res) => {
     try {
         const users = await Users.find();
@@ -38,16 +38,17 @@ server.get('/api/users', async (req, res) => {
         });
     }
 })
-// GET	/api/users/:id
+// GET USER BY ID //
 server.get('/api/users/:id', async (req, res) => {
+    const { id } = req.params;
     try {
-        if (!req.body.name) {
+        const user = await Users.findById(id);
+        if (!user) {
             res.status(404).json({
                 message: "The user with the specified ID does not exist"
-            })
+            });
         }
         else {
-            const user = await Users.findById(req.params.id);
             res.json(user);
         }
     } catch (err) {
@@ -57,25 +58,54 @@ server.get('/api/users/:id', async (req, res) => {
         });
     }
 })
-// DELETE	/api/users/:id
+// REMOVE USER //
 server.delete('/api/users/:id', async (req, res) => {
+    const { id } = req.params;
+
     try {
-        const deleteUser = await Users.remove(req.body);
+        const deleteUser = await Users.remove(id);
+        if (!deleteUser) {
+            res.status(404).json({
+                message: "The user with the specified ID does not exist"
+            });
+        }
+        else {
+            res.json(deleteUser);
+        }
 
     } catch (err) {
         res.status(500).json({
-            message: "you broke it",
+            message: "The user could not be removed",
             error: err.message
-        })
+        });
     }
 })
-// PUT	/api/users/:id
+// UPDATE USER //
+server.put('/api/users/:id', async (req, res) => {
+    const { id } = req.params;
+    const { body } = req;
 
-
-// {
-//     id: "a_unique_id", // String, required
-//     name: "Jane Doe",  // String, required
-//     bio: "Having fun", // String, required
-//   }
+    try {
+        const updatedUser = await Users.update(id, body);
+        if (!updatedUser) {
+            res.status(404).json({
+                message: "The user with the specified ID does not exist"
+            });
+        } 
+        else if (!body.name || !body.bio) {
+            res.status(400).json({
+                message: "Please provide name and bio for the user"
+            });
+        }
+        else {
+            res.json(updatedUser);
+        }
+    } catch (err) {
+            res.status(500).json({
+            message: "The user information could not be modified",
+            error: err.message
+        });
+    }
+})
 
 module.exports = server;
