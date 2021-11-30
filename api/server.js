@@ -54,10 +54,11 @@ server.get('/api/users/:id', async (req, res) => {
 // REMOVE USER //
 server.delete('/api/users/:id', async (req, res) => {
     try {
-        const deleteUser = await Users.remove(req.params.id);
-
-        if (deleteUser) return res.json(deleteUser);
-
+        const userExists = await Users.findById(req.params.id);
+        if (userExists) {
+            const deleteUser = await Users.remove(req.params.id);
+            return res.json(deleteUser);
+        }
         return res.status(404).json({
             message: "The user with the specified ID does not exist"
         });
